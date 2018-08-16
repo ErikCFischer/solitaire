@@ -1,0 +1,49 @@
+body {
+	font: 14px "Century Gothic", Futura, sans-serif;
+	margin: 20px;
+}
+.card {
+	user-select: none;
+	border: 1px solid #000;
+	border-radius: 10px;
+	height: 70px;
+	width: 50px;
+	font-size: 30px;
+	font-weight: bold;
+	line-height: 30px;
+	text-align: top left;
+	margin: 0;
+	padding: 0;
+}
+.red {
+	background-color: #f99;
+}
+.green {
+	background-color: #9f9;
+}
+.blue {
+	background-color: #99f;
+}
+.black {
+	background-color: #999;
+}
+.flipped {
+	background-color: #000;
+	border: 1px solid #fff;
+}
+.white {
+	background-color: #fff;
+}
+.hasdown {
+	margin-bottom: -45px;
+}
+.hasright {
+	margin-right: -25px;
+	float: left;
+}
+td {
+	vertical-align: top;
+}
+.hasdown.flipped {
+	margin-bottom: -60px;
+}
