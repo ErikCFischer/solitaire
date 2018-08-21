@@ -4,48 +4,88 @@ import './index.css';
 
 function Card(props) {
 	return (
-		<div className = {props.suit + " card"} onClick={() => props.onClick()}>{props.face}</div>
-	);
-}
-
-function DeckDown(props) {
-	let ddout;
-	if(props.cards.length) {
-		ddout = <Card suit="flipped" onClick={() => props.onClick()} />;
-	} else {
-		ddout = <Card suit="white" face="?" onClick={() => props.onClick()} />;
-	}
-	return (
-		<div>{ddout}</div>
-	);
-}
-
-function DeckUp(props) {
-	let ddout = props.cards.map( item => <Card suit={item[1] + " hasright"} face={item[0]} /> );
-	return (
-		<div>{ddout}</div>
-	);
-}
-
-function Home(props) {
-	let ddout = props.cards.map( item => <Card suit={item[2] ? item[1] : "flipped"} face={item[0]} /> );
-	return (
-		<div>{ddout}</div>
-	);
-}
-
-function Pile(props) {
-	let l = props.cards.length;
-	let ddout = Array(l);
-	for(let i = 0; i < l - 1; i++) {
-		ddout[i] = <Card suit={props.cards[i][2] ? props.cards[i][1] + " hasdown" : "flipped hasdown"} face={props.cards[i][2] ? props.cards[i][0] : ""} />
-	}
-	ddout[l-1] = <Card suit={props.cards[l-1][1] + " hasdown"} face={props.cards[l-1][0]} />
-	return (
-		<div>
-			{ddout}
+		<div className = {props.suit + " card"} onClick={props.onClick}>
+			{props.face}
 		</div>
 	);
+}
+
+class Stock extends React.Component {
+	render() {
+		let ddout;
+		if(this.props.cards.length) {
+			ddout = <Card suit="facedown" onClick={() => this.props.onClick()} />;
+		} else {
+			ddout = <Card suit="white" face="?" onClick={() => this.props.onClick()} />;
+		}
+		return (
+			<div>{ddout}</div>
+		);
+	}
+}
+
+class Heap extends React.Component {
+
+	renderCards(i) {
+		return (
+			<Card
+				suit={this.props.cards[i].suit + " hasright"}
+				face={this.props.cards[i].face}
+				onClick={() => this.props.onClick(i)}
+			/>
+		);
+	}
+
+	render() {
+		let l = this.props.cards.length;
+		if(l == 0) {
+			return null;
+		}
+		let ddout = Array(0);
+		for(let i = l-3; i < l; i++) {
+			ddout.push(this.renderCards(i));
+		}
+		return (
+			<div>
+				{ddout}
+			</div>
+		);
+	}
+}
+
+class Foundation extends React.Component {
+	render() {
+		let ddout = this.props.cards.map( item => <Card suit={item[2] ? item[1] : "facedown"} face={item[0]} /> );
+		return (
+			<div>{ddout}</div>
+		);
+	}
+}
+
+class Pile extends React.Component {
+
+	renderCards(i) {
+		return (
+			<Card
+				suit={this.props.cards[i].up ? this.props.cards[i].suit + " hasdown" : "facedown hasdown"}
+				face={this.props.cards[i].up ? this.props.cards[i].face : ""}
+				onClick={() => this.props.onClick(i)}
+			/>
+		);
+	}
+
+	render() {
+		let l = this.props.cards.length;
+		let ddout = Array(l);
+		for(let i = 0; i < l; i++) {
+			ddout[i] = this.renderCards(i);
+		}
+		return (
+			<div>
+				{ddout}
+			</div>
+		);
+	}
 }
 
 class Game extends React.Component {
@@ -57,39 +97,44 @@ class Game extends React.Component {
 		for(let s = 0; s < 4; s++) {
 			for(let f = 0; f < 13; f++) {
 				let i = f + s*13;
-				deck[i] = Array(3);
+
+				deck[i] = {
+					face: null,
+					suit: null,
+					up: false,
+				};
+
 				switch(f) {
 					case 0:
-						deck[i][0] = 'A';
+						deck[i].face = 'A';
 						break;
 					case 10:
-						deck[i][0] = 'J';
+						deck[i].face = 'J';
 						break;
 					case 11:
-						deck[i][0] = 'Q';
+						deck[i].face = 'Q';
 						break;
 					case 12:
-						deck[i][0] = 'K';
+						deck[i].face = 'K';
 						break;
 					default:
-						deck[i][0] = f+1;
+						deck[i].face = f+1;
 						break;
 				}
 				switch(s) {
 					case 0:
-						deck[i][1] = 'red';
+						deck[i].suit = 'liteRed';
 						break;
 					case 1:
-						deck[i][1] = 'green';
+						deck[i].suit = 'darkRed';
 						break;
 					case 2:
-						deck[i][1] = 'blue';
+						deck[i].suit = 'liteBlue';
 						break;
 					case 3:
-						deck[i][1] = 'black';
+						deck[i].suit = 'darkBlue';
 						break;
 				}
-				deck[i][2] = true;
 			}
 		}
 
@@ -98,57 +143,158 @@ class Game extends React.Component {
 				let pick = Math.floor(Math.random() * deck.length);
 				pile[i] = deck[pick];
 				deck.splice(pick,1);
-				pile[i][2] = false;
 			}
-			pile[pile.length-1][2] = true;
+			pile[pile.length-1].up = true;
 		};
 
-		let pile = Array(7).fill(null);
+		let pile = Array(7);
 		for(let i = 0; i < pile.length; i++) {
-			pile[i] = Array(i+1).fill(null);
-			fillPile(pile[i])
+			pile[i] = Array(i+1);
+			fillPile(pile[i]);
 		}
 
-		let deckDown = Array(24).fill(null);
-		fillPile(deckDown);
+		let stock = Array(24);
+		fillPile(stock);
 		
 		this.state = {
-			deckDown: deckDown,
-			deckUp: Array(0).fill(null),
-			home1: Array(0).fill(null),
-			home2: Array(0).fill(null),
-			home3: Array(0).fill(null),
-			home4: Array(0).fill(null),
-			pile1: pile[0],
-			pile2: pile[1],
-			pile3: pile[2],
-			pile4: pile[3],
-			pile5: pile[4],
-			pile6: pile[5],
-			pile7: pile[6],
+			stock: stock,
+			heap: Array(0),
+			foundation: Array(4).fill(Array(0)),
+			pile: pile,
+			selected: null,
 		};
 	}
 
-	deckDownFlip() {
-		let deckDown = this.state.deckDown;
-		let i = (deckDown.length > 3) ? deckDown.length - 3 : 0;
-		let l = (deckDown.length > 3) ? 3 : deckDown.length;
-		let deckUp = deckDown.splice(i,l);
+	stockClick() {
+		let stock = this.state.stock;
+		let heap = this.state.heap;
+
+		if(stock.length != 0) {
+
+			heap.push(stock.pop());
+			heap.push(stock.pop());
+			heap.push(stock.pop());
+			if(heap[heap.length-1] == undefined) {
+				if(heap[heap.length-2] == undefined) {
+					heap[heap.length-3].up = true;
+				} else {
+					heap[heap.length-2].up = true;
+					heap[heap.length-3].up = false;
+				}
+			} else {
+				heap[heap.length-1].up = true;
+				heap[heap.length-2].up = false;
+				heap[heap.length-3].up = false;
+			}
+
+
+		} else {
+			for(let i = heap.length; i > 0; i--) {
+				let h = heap.pop();
+				if(h != undefined) {
+					stock.push(h);
+				}
+			}
+		}
 
 		this.setState({
-			deckDown: deckDown,
-			deckUp: deckUp,
-			home1: this.state.home1,
-			home2: this.state.home2,
-			home3: this.state.home3,
-			home4: this.state.home4,
-			pile1: this.state.pile1,
-			pile2: this.state.pile2,
-			pile3: this.state.pile3,
-			pile4: this.state.pile4,
-			pile5: this.state.pile5,
-			pile6: this.state.pile6,
-			pile7: this.state.pile7,
+			stock: stock,
+			heap: heap,
+			foundation: this.state.foundation,
+			pile: this.state.pile,
+			selected: this.state.selected,
+		});
+	}
+
+	heapClick(i) {
+		let heap = this.state.heap;
+		let selected = this.state.selected;
+
+		if(selected == null && heap[i].up) {
+			selected = {
+				section: "heap",
+				index: i,
+			};
+			heap[i].suit += " selected";
+		} else if (heap[i].suit.slice(-9) == " selected") {
+			selected = null;
+			heap[i].suit = heap[i].suit.slice(0,-9);
+		}
+
+		this.setState({
+			stock: this.state.stock,
+			heap: heap,
+			foundation: this.state.foundation,
+			pile: this.state.pile,
+			selected: selected,
+		});
+	}
+
+	foundationClick(f, i) {
+		let foundation = this.state.foundation;
+		let selected = this.state.selected;
+
+		if(selected == null && foundation[f] != null) {
+			selected = {
+				section: "foundation",
+				foundation: f,
+				index: i,
+			};
+			foundation[f][i].suit += " selected";
+		} else if (foundation[f][i].suit.slice(-9) == " selected") {
+			selected = null;
+			foundation[f][i].suit = foundation[f][i].suit.slice(0,-9);
+		} else {
+			switch(selected.section) {
+				case "heap":
+					break;
+				case "foundation":
+					break;
+				case "pile":
+					break;
+			}
+		}
+
+		this.setState({
+			stock: this.state.stock,
+			heap: this.state.heap,
+			foundation: foundation,
+			pile: this.state.pile,
+			selected: selected,
+		});
+	}
+
+	pileClick(p, i) {
+		let pile = this.state.pile;
+		let selected = this.state.selected;
+
+		if(selected == null && pile[p][i].up) {
+			selected = {
+				section: "pile",
+				pile: p,
+				index: i,
+			};
+			pile[p][i].suit += " selected";
+		} else if (pile[p][i].suit.slice(-9) == " selected") {
+			selected = null;
+			pile[p][i].suit = pile[p][i].suit.slice(0,-9);
+		} else {
+			switch(selected.section) {
+				case "heap":
+					break;
+				case "foundation":
+					break;
+				case "pile":
+					break;
+			}
+		}
+
+		this.setState({
+			stock: this.state.stock,
+			heap: this.state.heap,
+			foundation: this.state.foundation,
+			pile: pile,
+			selected: selected,
 		});
 	}
 
@@ -156,21 +302,47 @@ class Game extends React.Component {
 		return (
 			<table border='1' cellSpacing='10'>
 				<tr>
-					<td><DeckDown cards={this.state.deckDown} onClick={() => this.deckDownFlip()} /></td>
-					<td colSpan='2'><DeckUp cards={this.state.deckUp} /></td>
-					<td><Home cards={this.state.home1} /></td>
-					<td><Home cards={this.state.home2} /></td>
-					<td><Home cards={this.state.home3} /></td>
-					<td><Home cards={this.state.home4} /></td>
+					<td>
+						<Stock cards={this.state.stock} onClick={() => this.stockClick()} />
+					</td>
+					<td colSpan='2'>
+						<Heap cards={this.state.heap} onClick={i => this.heapClick(i)} />
+					</td>
+					<td className="liteRed">
+						<Foundation cards={this.state.foundation[0]} onClick={i => this.foundationClick(0,i)} />
+					</td>
+					<td className="darkRed">
+						<Foundation cards={this.state.foundation[1]} onClick={i => this.foundationClick(1,i)} />
+					</td>
+					<td className="liteBlue">
+						<Foundation cards={this.state.foundation[2]} onClick={i => this.foundationClick(2,i)} />
+					</td>
+					<td className="darkBlue">
+						<Foundation cards={this.state.foundation[3]} onClick={i => this.foundationClick(3,i)} />
+					</td>
 				</tr>
 				<tr>
-					<td><Pile cards={this.state.pile1} /></td>
-					<td><Pile cards={this.state.pile2} /></td>
-					<td><Pile cards={this.state.pile3} /></td>
-					<td><Pile cards={this.state.pile4} /></td>
-					<td><Pile cards={this.state.pile5} /></td>
-					<td><Pile cards={this.state.pile6} /></td>
-					<td><Pile cards={this.state.pile7} /></td>
+					<td>
+						<Pile cards={this.state.pile[0]} onClick={i => this.pileClick(0,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[1]} onClick={i => this.pileClick(1,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[2]} onClick={i => this.pileClick(2,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[3]} onClick={i => this.pileClick(3,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[4]} onClick={i => this.pileClick(4,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[5]} onClick={i => this.pileClick(5,i)} />
+					</td>
+					<td>
+						<Pile cards={this.state.pile[6]} onClick={i => this.pileClick(6,i)} />
+					</td>
 				</tr>
 			</table>
 		);

@@ -1,5 +1,5 @@
 body {
-	font: 14px "Century Gothic", Futura, sans-serif;
+	font: 14px "monospace", Futura, sans-serif;
 	margin: 20px;
 }
 .card {
@@ -8,42 +8,50 @@ body {
 	border-radius: 10px;
 	height: 70px;
 	width: 50px;
-	font-size: 30px;
+	box-sizing: border-box;
+	font-size: 20px;
 	font-weight: bold;
-	line-height: 30px;
+	line-height: 20px;
 	text-align: top left;
 	margin: 0;
-	padding: 0;
+	padding-left: 3px;
 }
-.red {
-	background-color: #f99;
+.liteRed {
+	background-color: #f88;
 }
-.green {
-	background-color: #9f9;
+.darkRed {
+	background-color: #f44;
 }
-.blue {
-	background-color: #99f;
+.liteBlue {
+	background-color: #aaf;
 }
-.black {
-	background-color: #999;
+.darkBlue {
+	background-color: #44f;
 }
-.flipped {
-	background-color: #000;
-	border: 1px solid #fff;
+.facedown {
+	background-color: #555;
 }
 .white {
 	background-color: #fff;
 }
 .hasdown {
-	margin-bottom: -45px;
+	margin-bottom: -50px;
 }
 .hasright {
 	margin-right: -25px;
 	float: left;
 }
+.isunder {
+	margin-bottom: -70px;
+	margin-right: -50px;
+	float: left;
+}
 td {
 	vertical-align: top;
 }
-.hasdown.flipped {
-	margin-bottom: -60px;
+.hasdown.facedown {
+	margin-bottom: -63px;
+}
+.selected {
+	border: 3px solid #ff0;
 }
